@@ -1,0 +1,917 @@
+newman
+
+Lab05 — Бүртгэлийн API тест
+
+❏ T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK
+↳ Setup: оюутан t01-stu ({"status":"active","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t01-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+  2. Setup: оюутан t01-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK
+
+↳ Setup: хичээл t01-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t01-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+  4. Setup: хичээл t01-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+  6. T01 — статус 201
+  7. T01 — result = OK
+  8. T01 — registrationID нь тоо
+
+❏ T02. Байхгүй оюутан бүртгүүлэхэд ERROR_NO_STUDENT
+↳ Setup: хичээл t02-crs ({"prerequisites":[]})
+  PUT http://localhost:3000/courses/t02-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 10. Setup: хичээл t02-crs ({"prerequisites":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 12. T02 — статус 200
+ 13. T02 — result = ERROR_NO_STUDENT
+
+❏ T03. Идэвхгүй оюутан бүртгүүлэхэд ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t03-stu ({"status":"inactive","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t03-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 15. Setup: оюутан t03-stu ({"status":"inactive","coursesTaken":["CS201"]}) → 200 OK
+
+↳ Setup: хичээл t03-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t03-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 17. Setup: хичээл t03-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 19. T03 — статус 200
+ 20. T03 — result = ERROR_INACTIVE_STUDENT
+
+❏ T04. Байхгүй хичээлд бүртгүүлэхэд ERROR_NO_COURSE
+↳ Setup: оюутан t04-stu ({"status":"active","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t04-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 22. Setup: оюутан t04-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 24. T04 — статус 200
+ 25. T04 — result = ERROR_NO_COURSE
+
+❏ T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд)
+↳ Setup: оюутан t05-stu ({"status":"active","coursesTaken":[]})
+  PUT http://localhost:3000/students/t05-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 27. Setup: оюутан t05-stu ({"status":"active","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t05-crs ({"prerequisites":["CS201","CS202"]})
+  PUT http://localhost:3000/courses/t05-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 29. Setup: хичээл t05-crs ({"prerequisites":["CS201","CS202"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 31. T05 — статус 200
+ 32. T05 — result = ERROR_PREREQUISITES
+ 33. T05 — missing = ["CS201","CS202"]
+
+❏ T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана
+↳ Setup: оюутан t06-stu ({"status":"active","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t06-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 35. Setup: оюутан t06-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK
+
+↳ Setup: хичээл t06-crs ({"prerequisites":["CS201","CS301"]})
+  PUT http://localhost:3000/courses/t06-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 37. Setup: хичээл t06-crs ({"prerequisites":["CS201","CS301"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 39. T06 — статус 200
+ 40. T06 — result = ERROR_PREREQUISITES
+ 41. T06 — missing = ["CS301"]
+
+❏ T07. Давхар алдаа: оюутан ч, хичээл ч байхгүй → ERROR_NO_STUDENT
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 43. T07 — статус 200
+ 44. T07 — result = ERROR_NO_STUDENT
+
+❏ T08. Давхар алдаа: идэвхгүй оюутан + байхгүй хичээл → ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t08-stu ({"status":"inactive","coursesTaken":[]})
+  PUT http://localhost:3000/students/t08-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 46. Setup: оюутан t08-stu ({"status":"inactive","coursesTaken":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 48. T08 — статус 200
+ 49. T08 — result = ERROR_INACTIVE_STUDENT
+
+❏ T09. Давхар алдаа: идэвхгүй оюутан + урьдач дутуу → ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t09-stu ({"status":"inactive","coursesTaken":[]})
+  PUT http://localhost:3000/students/t09-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 51. Setup: оюутан t09-stu ({"status":"inactive","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t09-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t09-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 53. Setup: хичээл t09-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 55. T09 — статус 200
+ 56. T09 — result = ERROR_INACTIVE_STUDENT
+
+❏ T10. Давхар алдаа: байхгүй оюутан + урьдачтай хичээл → ERROR_NO_STUDENT
+↳ Setup: хичээл t10-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t10-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 58. Setup: хичээл t10-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 60. T10 — статус 200
+ 61. T10 — result = ERROR_NO_STUDENT
+
+❏ T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK
+↳ Setup: оюутан t11-stu ({"status":"active","coursesTaken":[]})
+  PUT http://localhost:3000/students/t11-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 63. Setup: оюутан t11-stu ({"status":"active","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t11-crs ({"prerequisites":[]})
+  PUT http://localhost:3000/courses/t11-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 65. Setup: хичээл t11-crs ({"prerequisites":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 67. T11 — статус 201
+ 68. T11 — result = OK
+ 69. T11 — registrationID нь тоо
+
+❏ T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK
+↳ Setup: оюутан t12-stu ({})
+  PUT http://localhost:3000/students/t12-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 71. Setup: оюутан t12-stu ({}) → 200 OK
+
+↳ Setup: хичээл t12-crs ({})
+  PUT http://localhost:3000/courses/t12-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 73. Setup: хичээл t12-crs ({}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 75. T12 — статус 201
+ 76. T12 — result = OK
+ 77. T12 — registrationID нь тоо
+
+❏ T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK
+↳ Setup: оюутан t13-stu ({"status":"active","coursesTaken":["CS101","CS201","CS202"]})
+  PUT http://localhost:3000/students/t13-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 79. Setup: оюутан t13-stu ({"status":"active","coursesTaken":["CS101","CS201","CS202"]}) → 200 OK
+
+↳ Setup: хичээл t13-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t13-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 81. Setup: хичээл t13-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 83. T13 — статус 201
+ 84. T13 — result = OK
+ 85. T13 — registrationID нь тоо
+
+❏ T14. Хязгаар: status = "suspended" (active биш) → ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t14-stu ({"status":"suspended","coursesTaken":[]})
+  PUT http://localhost:3000/students/t14-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 87. Setup: оюутан t14-stu ({"status":"suspended","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t14-crs ({"prerequisites":[]})
+  PUT http://localhost:3000/courses/t14-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 89. Setup: хичээл t14-crs ({"prerequisites":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 91. T14 — статус 200
+ 92. T14 — result = ERROR_INACTIVE_STUDENT
+
+❏ T15. Хязгаар: courseID дутуу → 400 ERROR_BAD_REQUEST
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 94. T15 — статус 400
+ 95. T15 — result = ERROR_BAD_REQUEST
+
+❏ T16. Хязгаар: studentID дутуу → 400 ERROR_BAD_REQUEST
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+ 97. T16 — статус 400
+ 98. T16 — result = ERROR_BAD_REQUEST
+
+❏ T17. Хязгаар: хоосон объект {} → 400 ERROR_BAD_REQUEST
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+100. T17 — статус 400
+101. T17 — result = ERROR_BAD_REQUEST
+
+❏ T18. Хязгаар: буруу JSON → 400 ERROR_BAD_JSON
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+103. T18 — статус 400
+104. T18 — result = ERROR_BAD_JSON
+
+❏ T19. GET /courses/:id — байгаа хичээлийг харах → 200
+↳ Setup: хичээл t19-crs
+  PUT http://localhost:3000/courses/t19-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+106. Setup: хичээл t19-crs → 200 OK
+
+↳ GET /courses/t19-crs
+  GET http://localhost:3000/courses/t19-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+108. T19 — статус 200
+109. T19 — courseID ба prerequisites зөв
+
+❏ T20. GET /courses/:id — байхгүй хичээл → 404 ERROR_NO_COURSE
+↳ GET /courses/t20-missing
+  GET http://localhost:3000/courses/t20-missing [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+111. T20 — статус 404
+112. T20 — result = ERROR_NO_COURSE
+
+❏ T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно
+↳ Setup: оюутан t21-stu
+  PUT http://localhost:3000/students/t21-stu [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+114. Setup: оюутан t21-stu → 200 OK
+
+↳ Setup: хичээл t21-crs
+  PUT http://localhost:3000/courses/t21-crs [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+116. Setup: хичээл t21-crs → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+118. T21 — статус 201
+119. T21 — registrationID-г хадгалав
+
+↳ GET /registrations
+  GET http://localhost:3000/registrations [errored]
+     connect ECONNREFUSED 127.0.0.1:3000
+121. T21 — статус 200 ба массив
+122. T21 — шинэ бүртгэл (studentID, courseID, registrationID) жагсаалтад байна
+
+┌─────────────────────────┬──────────┬──────────┐
+│                         │ executed │   failed │
+├─────────────────────────┼──────────┼──────────┤
+│              iterations │        1 │        0 │
+├─────────────────────────┼──────────┼──────────┤
+│                requests │       47 │       47 │
+├─────────────────────────┼──────────┼──────────┤
+│            test-scripts │       47 │        0 │
+├─────────────────────────┼──────────┼──────────┤
+│      prerequest-scripts │        0 │        0 │
+├─────────────────────────┼──────────┼──────────┤
+│              assertions │       75 │       75 │
+├─────────────────────────┴──────────┴──────────┤
+│ total run duration: 802ms                     │
+├───────────────────────────────────────────────┤
+│ total data received: 0B (approx)              │
+└───────────────────────────────────────────────┘
+
+[31m    # [39m[31m failure        [39m[31m detail                                                                                                                                                      [39m
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 001.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 002.  AssertionError  Setup: оюутан t01-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK                                                                               
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK / Setup: оюутан t01-stu ({"status":"active","coursesTaken":["CS201"]})"                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 003.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 004.  AssertionError  Setup: хичээл t01-crs ({"prerequisites":["CS201"]}) → 200 OK                                                                                                
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK / Setup: хичээл t01-crs ({"prerequisites":["CS201"]})"                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 005.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 006.  AssertionError  T01 — статус 201                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK / POST /registrations"                                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 007.  JSONError       T01 — result = OK                                                                                                                                           
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK / POST /registrations"                                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 008.  JSONError       T01 — registrationID нь тоо                                                                                                                                 
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:2 in test-script                                                                                                                               
+                       inside "T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK / POST /registrations"                                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 009.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 010.  AssertionError  Setup: хичээл t02-crs ({"prerequisites":[]}) → 200 OK                                                                                                       
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T02. Байхгүй оюутан бүртгүүлэхэд ERROR_NO_STUDENT / Setup: хичээл t02-crs ({"prerequisites":[]})"                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 011.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 012.  AssertionError  T02 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T02. Байхгүй оюутан бүртгүүлэхэд ERROR_NO_STUDENT / POST /registrations"                                                                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 013.  JSONError       T02 — result = ERROR_NO_STUDENT                                                                                                                             
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T02. Байхгүй оюутан бүртгүүлэхэд ERROR_NO_STUDENT / POST /registrations"                                                                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 014.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 015.  AssertionError  Setup: оюутан t03-stu ({"status":"inactive","coursesTaken":["CS201"]}) → 200 OK                                                                             
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T03. Идэвхгүй оюутан бүртгүүлэхэд ERROR_INACTIVE_STUDENT / Setup: оюутан t03-stu ({"status":"inactive","coursesTaken":["CS201"]})"                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 016.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 017.  AssertionError  Setup: хичээл t03-crs ({"prerequisites":["CS201"]}) → 200 OK                                                                                                
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T03. Идэвхгүй оюутан бүртгүүлэхэд ERROR_INACTIVE_STUDENT / Setup: хичээл t03-crs ({"prerequisites":["CS201"]})"                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 018.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 019.  AssertionError  T03 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T03. Идэвхгүй оюутан бүртгүүлэхэд ERROR_INACTIVE_STUDENT / POST /registrations"                                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 020.  JSONError       T03 — result = ERROR_INACTIVE_STUDENT                                                                                                                       
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T03. Идэвхгүй оюутан бүртгүүлэхэд ERROR_INACTIVE_STUDENT / POST /registrations"                                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 021.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 022.  AssertionError  Setup: оюутан t04-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK                                                                               
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T04. Байхгүй хичээлд бүртгүүлэхэд ERROR_NO_COURSE / Setup: оюутан t04-stu ({"status":"active","coursesTaken":["CS201"]})"                           
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 023.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 024.  AssertionError  T04 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T04. Байхгүй хичээлд бүртгүүлэхэд ERROR_NO_COURSE / POST /registrations"                                                                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 025.  JSONError       T04 — result = ERROR_NO_COURSE                                                                                                                              
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T04. Байхгүй хичээлд бүртгүүлэхэд ERROR_NO_COURSE / POST /registrations"                                                                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 026.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 027.  AssertionError  Setup: оюутан t05-stu ({"status":"active","coursesTaken":[]}) → 200 OK                                                                                      
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд) / Setup: оюутан t05-stu ({"status":"active","coursesTaken":[]})"          
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 028.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 029.  AssertionError  Setup: хичээл t05-crs ({"prerequisites":["CS201","CS202"]}) → 200 OK                                                                                        
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд) / Setup: хичээл t05-crs ({"prerequisites":["CS201","CS202"]})"            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 030.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 031.  AssertionError  T05 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд) / POST /registrations"                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 032.  JSONError       T05 — result = ERROR_PREREQUISITES                                                                                                                          
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд) / POST /registrations"                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 033.  JSONError       T05 — missing = ["CS201","CS202"]                                                                                                                           
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:2 in test-script                                                                                                                               
+                       inside "T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд) / POST /registrations"                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 034.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 035.  AssertionError  Setup: оюутан t06-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK                                                                               
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана / Setup: оюутан t06-stu ({"status":"active","coursesTaken":["CS201"]})"    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 036.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 037.  AssertionError  Setup: хичээл t06-crs ({"prerequisites":["CS201","CS301"]}) → 200 OK                                                                                        
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана / Setup: хичээл t06-crs ({"prerequisites":["CS201","CS301"]})"             
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 038.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 039.  AssertionError  T06 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана / POST /registrations"                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 040.  JSONError       T06 — result = ERROR_PREREQUISITES                                                                                                                          
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана / POST /registrations"                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 041.  JSONError       T06 — missing = ["CS301"]                                                                                                                                   
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:2 in test-script                                                                                                                               
+                       inside "T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана / POST /registrations"                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 042.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 043.  AssertionError  T07 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T07. Давхар алдаа: оюутан ч, хичээл ч байхгүй → ERROR_NO_STUDENT / POST /registrations"                                                             
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 044.  JSONError       T07 — result = ERROR_NO_STUDENT                                                                                                                             
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T07. Давхар алдаа: оюутан ч, хичээл ч байхгүй → ERROR_NO_STUDENT / POST /registrations"                                                             
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 045.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 046.  AssertionError  Setup: оюутан t08-stu ({"status":"inactive","coursesTaken":[]}) → 200 OK                                                                                    
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T08. Давхар алдаа: идэвхгүй оюутан + байхгүй хичээл → ERROR_INACTIVE_STUDENT / Setup: оюутан t08-stu ({"status":"inactive","coursesTaken":[]})"     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 047.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 048.  AssertionError  T08 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T08. Давхар алдаа: идэвхгүй оюутан + байхгүй хичээл → ERROR_INACTIVE_STUDENT / POST /registrations"                                                 
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 049.  JSONError       T08 — result = ERROR_INACTIVE_STUDENT                                                                                                                       
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T08. Давхар алдаа: идэвхгүй оюутан + байхгүй хичээл → ERROR_INACTIVE_STUDENT / POST /registrations"                                                 
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 050.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 051.  AssertionError  Setup: оюутан t09-stu ({"status":"inactive","coursesTaken":[]}) → 200 OK                                                                                    
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T09. Давхар алдаа: идэвхгүй оюутан + урьдач дутуу → ERROR_INACTIVE_STUDENT / Setup: оюутан t09-stu ({"status":"inactive","coursesTaken":[]})"       
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 052.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 053.  AssertionError  Setup: хичээл t09-crs ({"prerequisites":["CS201"]}) → 200 OK                                                                                                
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T09. Давхар алдаа: идэвхгүй оюутан + урьдач дутуу → ERROR_INACTIVE_STUDENT / Setup: хичээл t09-crs ({"prerequisites":["CS201"]})"                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 054.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 055.  AssertionError  T09 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T09. Давхар алдаа: идэвхгүй оюутан + урьдач дутуу → ERROR_INACTIVE_STUDENT / POST /registrations"                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 056.  JSONError       T09 — result = ERROR_INACTIVE_STUDENT                                                                                                                       
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T09. Давхар алдаа: идэвхгүй оюутан + урьдач дутуу → ERROR_INACTIVE_STUDENT / POST /registrations"                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 057.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 058.  AssertionError  Setup: хичээл t10-crs ({"prerequisites":["CS201"]}) → 200 OK                                                                                                
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T10. Давхар алдаа: байхгүй оюутан + урьдачтай хичээл → ERROR_NO_STUDENT / Setup: хичээл t10-crs ({"prerequisites":["CS201"]})"                      
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 059.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 060.  AssertionError  T10 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T10. Давхар алдаа: байхгүй оюутан + урьдачтай хичээл → ERROR_NO_STUDENT / POST /registrations"                                                      
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 061.  JSONError       T10 — result = ERROR_NO_STUDENT                                                                                                                             
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T10. Давхар алдаа: байхгүй оюутан + урьдачтай хичээл → ERROR_NO_STUDENT / POST /registrations"                                                      
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 062.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 063.  AssertionError  Setup: оюутан t11-stu ({"status":"active","coursesTaken":[]}) → 200 OK                                                                                      
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK / Setup: оюутан t11-stu ({"status":"active","coursesTaken":[]})"                
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 064.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 065.  AssertionError  Setup: хичээл t11-crs ({"prerequisites":[]}) → 200 OK                                                                                                       
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK / Setup: хичээл t11-crs ({"prerequisites":[]})"                                 
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 066.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 067.  AssertionError  T11 — статус 201                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK / POST /registrations"                                                          
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 068.  JSONError       T11 — result = OK                                                                                                                                           
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK / POST /registrations"                                                          
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 069.  JSONError       T11 — registrationID нь тоо                                                                                                                                 
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:2 in test-script                                                                                                                               
+                       inside "T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK / POST /registrations"                                                          
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 070.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 071.  AssertionError  Setup: оюутан t12-stu ({}) → 200 OK                                                                                                                         
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK / Setup: оюутан t12-stu ({})"                                       
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 072.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 073.  AssertionError  Setup: хичээл t12-crs ({}) → 200 OK                                                                                                                         
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK / Setup: хичээл t12-crs ({})"                                       
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 074.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 075.  AssertionError  T12 — статус 201                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK / POST /registrations"                                              
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 076.  JSONError       T12 — result = OK                                                                                                                                           
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK / POST /registrations"                                              
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 077.  JSONError       T12 — registrationID нь тоо                                                                                                                                 
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:2 in test-script                                                                                                                               
+                       inside "T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK / POST /registrations"                                              
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 078.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 079.  AssertionError  Setup: оюутан t13-stu ({"status":"active","coursesTaken":["CS101","CS201","CS202"]}) → 200 OK                                                               
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK / Setup: оюутан t13-stu ({"status":"active","coursesTaken":["CS101","CS201","CS202"]})" 
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 080.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 081.  AssertionError  Setup: хичээл t13-crs ({"prerequisites":["CS201"]}) → 200 OK                                                                                                
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK / Setup: хичээл t13-crs ({"prerequisites":["CS201"]})"                                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 082.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 083.  AssertionError  T13 — статус 201                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK / POST /registrations"                                                                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 084.  JSONError       T13 — result = OK                                                                                                                                           
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK / POST /registrations"                                                                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 085.  JSONError       T13 — registrationID нь тоо                                                                                                                                 
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:2 in test-script                                                                                                                               
+                       inside "T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK / POST /registrations"                                                                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 086.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 087.  AssertionError  Setup: оюутан t14-stu ({"status":"suspended","coursesTaken":[]}) → 200 OK                                                                                   
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T14. Хязгаар: status = "suspended" (active биш) → ERROR_INACTIVE_STUDENT / Setup: оюутан t14-stu ({"status":"suspended","coursesTaken":[]})"        
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 088.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 089.  AssertionError  Setup: хичээл t14-crs ({"prerequisites":[]}) → 200 OK                                                                                                       
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T14. Хязгаар: status = "suspended" (active биш) → ERROR_INACTIVE_STUDENT / Setup: хичээл t14-crs ({"prerequisites":[]})"                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 090.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 091.  AssertionError  T14 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T14. Хязгаар: status = "suspended" (active биш) → ERROR_INACTIVE_STUDENT / POST /registrations"                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 092.  JSONError       T14 — result = ERROR_INACTIVE_STUDENT                                                                                                                       
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T14. Хязгаар: status = "suspended" (active биш) → ERROR_INACTIVE_STUDENT / POST /registrations"                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 093.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 094.  AssertionError  T15 — статус 400                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T15. Хязгаар: courseID дутуу → 400 ERROR_BAD_REQUEST / POST /registrations"                                                                         
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 095.  JSONError       T15 — result = ERROR_BAD_REQUEST                                                                                                                            
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T15. Хязгаар: courseID дутуу → 400 ERROR_BAD_REQUEST / POST /registrations"                                                                         
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 096.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 097.  AssertionError  T16 — статус 400                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T16. Хязгаар: studentID дутуу → 400 ERROR_BAD_REQUEST / POST /registrations"                                                                        
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 098.  JSONError       T16 — result = ERROR_BAD_REQUEST                                                                                                                            
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T16. Хязгаар: studentID дутуу → 400 ERROR_BAD_REQUEST / POST /registrations"                                                                        
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 099.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 100.  AssertionError  T17 — статус 400                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T17. Хязгаар: хоосон объект {} → 400 ERROR_BAD_REQUEST / POST /registrations"                                                                       
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 101.  JSONError       T17 — result = ERROR_BAD_REQUEST                                                                                                                            
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T17. Хязгаар: хоосон объект {} → 400 ERROR_BAD_REQUEST / POST /registrations"                                                                       
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 102.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 103.  AssertionError  T18 — статус 400                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T18. Хязгаар: буруу JSON → 400 ERROR_BAD_JSON / POST /registrations"                                                                                
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 104.  JSONError       T18 — result = ERROR_BAD_JSON                                                                                                                               
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T18. Хязгаар: буруу JSON → 400 ERROR_BAD_JSON / POST /registrations"                                                                                
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 105.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 106.  AssertionError  Setup: хичээл t19-crs → 200 OK                                                                                                                              
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T19. GET /courses/:id — байгаа хичээлийг харах → 200 / Setup: хичээл t19-crs"                                                                       
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 107.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 108.  AssertionError  T19 — статус 200                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T19. GET /courses/:id — байгаа хичээлийг харах → 200 / GET /courses/t19-crs"                                                                        
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 109.  JSONError       T19 — courseID ба prerequisites зөв                                                                                                                         
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T19. GET /courses/:id — байгаа хичээлийг харах → 200 / GET /courses/t19-crs"                                                                        
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 110.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 111.  AssertionError  T20 — статус 404                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T20. GET /courses/:id — байхгүй хичээл → 404 ERROR_NO_COURSE / GET /courses/t20-missing"                                                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 112.  JSONError       T20 — result = ERROR_NO_COURSE                                                                                                                              
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T20. GET /courses/:id — байхгүй хичээл → 404 ERROR_NO_COURSE / GET /courses/t20-missing"                                                            
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 113.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 114.  AssertionError  Setup: оюутан t21-stu → 200 OK                                                                                                                              
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно / Setup: оюутан t21-stu"                                                                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 115.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 116.  AssertionError  Setup: хичээл t21-crs → 200 OK                                                                                                                              
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно / Setup: хичээл t21-crs"                                                                  
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 117.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 118.  AssertionError  T21 — статус 201                                                                                                                                            
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно / POST /registrations"                                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 119.  JSONError       T21 — registrationID-г хадгалав                                                                                                                             
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно / POST /registrations"                                                                    
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 120.  Error                                                                                                                                                                       
+                       connect ECONNREFUSED 127.0.0.1:3000                                                                                                                         
+                       at request                                                                                                                                                  
+                       inside ""                                                                                                                                                   
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 121.  AssertionError  T21 — статус 200 ба массив                                                                                                                                  
+                       expected PostmanResponse{ …(5) } to have property 'code'                                                                                                    
+                       at assertion:0 in test-script                                                                                                                               
+                       inside "T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно / GET /registrations"                                                                     
+[90m      [39m[90m                [39m[90m                                                                                                                                                             [39m
+ 122.  JSONError       T21 — шинэ бүртгэл (studentID, courseID, registrationID) жагсаалтад байна                                                                                   
+                       "undefined" is not valid JSON                                                                                                                               
+                       at assertion:1 in test-script                                                                                                                               
+                       inside "T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно / GET /registrations"                                                                     

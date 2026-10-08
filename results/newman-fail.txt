@@ -1,0 +1,267 @@
+newman
+
+Lab05 — FAIL хувилбар (T01 статус зориуд буруу)
+
+❏ T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK
+↳ Setup: оюутан t01-stu ({"status":"active","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t01-stu [200 OK, 178B, 26ms]
+  ✓  Setup: оюутан t01-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK
+
+↳ Setup: хичээл t01-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t01-crs [200 OK, 178B, 3ms]
+  ✓  Setup: хичээл t01-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 202B, 2ms]
+  1. T01 — статус 200
+  ✓  T01 — result = OK
+  ✓  T01 — registrationID нь тоо
+
+❏ T02. Байхгүй оюутан бүртгүүлэхэд ERROR_NO_STUDENT
+↳ Setup: хичээл t02-crs ({"prerequisites":[]})
+  PUT http://localhost:3000/courses/t02-crs [200 OK, 178B, 2ms]
+  ✓  Setup: хичээл t02-crs ({"prerequisites":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 192B, 2ms]
+  ✓  T02 — статус 200
+  ✓  T02 — result = ERROR_NO_STUDENT
+
+❏ T03. Идэвхгүй оюутан бүртгүүлэхэд ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t03-stu ({"status":"inactive","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t03-stu [200 OK, 178B, 2ms]
+  ✓  Setup: оюутан t03-stu ({"status":"inactive","coursesTaken":["CS201"]}) → 200 OK
+
+↳ Setup: хичээл t03-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t03-crs [200 OK, 178B, 2ms]
+  ✓  Setup: хичээл t03-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 198B, 2ms]
+  ✓  T03 — статус 200
+  ✓  T03 — result = ERROR_INACTIVE_STUDENT
+
+❏ T04. Байхгүй хичээлд бүртгүүлэхэд ERROR_NO_COURSE
+↳ Setup: оюутан t04-stu ({"status":"active","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t04-stu [200 OK, 178B, 5ms]
+  ✓  Setup: оюутан t04-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 191B, 2ms]
+  ✓  T04 — статус 200
+  ✓  T04 — result = ERROR_NO_COURSE
+
+❏ T05. Урьдач нөхцөл огт хангаагүй үед ERROR_PREREQUISITES (missing = бүгд)
+↳ Setup: оюутан t05-stu ({"status":"active","coursesTaken":[]})
+  PUT http://localhost:3000/students/t05-stu [200 OK, 178B, 3ms]
+  ✓  Setup: оюутан t05-stu ({"status":"active","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t05-crs ({"prerequisites":["CS201","CS202"]})
+  PUT http://localhost:3000/courses/t05-crs [200 OK, 178B, 2ms]
+  ✓  Setup: хичээл t05-crs ({"prerequisites":["CS201","CS202"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 223B, 1ms]
+  ✓  T05 — статус 200
+  ✓  T05 — result = ERROR_PREREQUISITES
+  ✓  T05 — missing = ["CS201","CS202"]
+
+❏ T06. Урьдач нөхцөл хэсэгчлэн хангасан үед missing зөвхөн дутууг жагсаана
+↳ Setup: оюутан t06-stu ({"status":"active","coursesTaken":["CS201"]})
+  PUT http://localhost:3000/students/t06-stu [200 OK, 178B, 1ms]
+  ✓  Setup: оюутан t06-stu ({"status":"active","coursesTaken":["CS201"]}) → 200 OK
+
+↳ Setup: хичээл t06-crs ({"prerequisites":["CS201","CS301"]})
+  PUT http://localhost:3000/courses/t06-crs [200 OK, 178B, 1ms]
+  ✓  Setup: хичээл t06-crs ({"prerequisites":["CS201","CS301"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 215B, 1ms]
+  ✓  T06 — статус 200
+  ✓  T06 — result = ERROR_PREREQUISITES
+  ✓  T06 — missing = ["CS301"]
+
+❏ T07. Давхар алдаа: оюутан ч, хичээл ч байхгүй → ERROR_NO_STUDENT
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 192B, 1ms]
+  ✓  T07 — статус 200
+  ✓  T07 — result = ERROR_NO_STUDENT
+
+❏ T08. Давхар алдаа: идэвхгүй оюутан + байхгүй хичээл → ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t08-stu ({"status":"inactive","coursesTaken":[]})
+  PUT http://localhost:3000/students/t08-stu [200 OK, 178B, 1ms]
+  ✓  Setup: оюутан t08-stu ({"status":"inactive","coursesTaken":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 198B, 1ms]
+  ✓  T08 — статус 200
+  ✓  T08 — result = ERROR_INACTIVE_STUDENT
+
+❏ T09. Давхар алдаа: идэвхгүй оюутан + урьдач дутуу → ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t09-stu ({"status":"inactive","coursesTaken":[]})
+  PUT http://localhost:3000/students/t09-stu [200 OK, 178B, 1ms]
+  ✓  Setup: оюутан t09-stu ({"status":"inactive","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t09-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t09-crs [200 OK, 178B, 1ms]
+  ✓  Setup: хичээл t09-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 198B, 1ms]
+  ✓  T09 — статус 200
+  ✓  T09 — result = ERROR_INACTIVE_STUDENT
+
+❏ T10. Давхар алдаа: байхгүй оюутан + урьдачтай хичээл → ERROR_NO_STUDENT
+↳ Setup: хичээл t10-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t10-crs [200 OK, 178B, 1ms]
+  ✓  Setup: хичээл t10-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 192B, 1ms]
+  ✓  T10 — статус 200
+  ✓  T10 — result = ERROR_NO_STUDENT
+
+❏ T11. Хязгаар: урьдач нөхцөлгүй хичээл, хоосон coursesTaken → 201 OK
+↳ Setup: оюутан t11-stu ({"status":"active","coursesTaken":[]})
+  PUT http://localhost:3000/students/t11-stu [200 OK, 178B, 2ms]
+  ✓  Setup: оюутан t11-stu ({"status":"active","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t11-crs ({"prerequisites":[]})
+  PUT http://localhost:3000/courses/t11-crs [200 OK, 178B, 2ms]
+  ✓  Setup: хичээл t11-crs ({"prerequisites":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 202B, 2ms]
+  ✓  T11 — статус 201
+  ✓  T11 — result = OK
+  ✓  T11 — registrationID нь тоо
+
+❏ T12. Хязгаар: status, coursesTaken, prerequisites орхивол анхдагч утгаар 201 OK
+↳ Setup: оюутан t12-stu ({})
+  PUT http://localhost:3000/students/t12-stu [200 OK, 178B, 4ms]
+  ✓  Setup: оюутан t12-stu ({}) → 200 OK
+
+↳ Setup: хичээл t12-crs ({})
+  PUT http://localhost:3000/courses/t12-crs [200 OK, 178B, 5ms]
+  ✓  Setup: хичээл t12-crs ({}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 202B, 4ms]
+  ✓  T12 — статус 201
+  ✓  T12 — result = OK
+  ✓  T12 — registrationID нь тоо
+
+❏ T13. Хязгаар: шаардлагаас илүү хичээл үзсэн оюутан → 201 OK
+↳ Setup: оюутан t13-stu ({"status":"active","coursesTaken":["CS101","CS201","CS202"]})
+  PUT http://localhost:3000/students/t13-stu [200 OK, 178B, 4ms]
+  ✓  Setup: оюутан t13-stu ({"status":"active","coursesTaken":["CS101","CS201","CS202"]}) → 200 OK
+
+↳ Setup: хичээл t13-crs ({"prerequisites":["CS201"]})
+  PUT http://localhost:3000/courses/t13-crs [200 OK, 178B, 5ms]
+  ✓  Setup: хичээл t13-crs ({"prerequisites":["CS201"]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 202B, 5ms]
+  ✓  T13 — статус 201
+  ✓  T13 — result = OK
+  ✓  T13 — registrationID нь тоо
+
+❏ T14. Хязгаар: status = "suspended" (active биш) → ERROR_INACTIVE_STUDENT
+↳ Setup: оюутан t14-stu ({"status":"suspended","coursesTaken":[]})
+  PUT http://localhost:3000/students/t14-stu [200 OK, 178B, 5ms]
+  ✓  Setup: оюутан t14-stu ({"status":"suspended","coursesTaken":[]}) → 200 OK
+
+↳ Setup: хичээл t14-crs ({"prerequisites":[]})
+  PUT http://localhost:3000/courses/t14-crs [200 OK, 178B, 4ms]
+  ✓  Setup: хичээл t14-crs ({"prerequisites":[]}) → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 198B, 4ms]
+  ✓  T14 — статус 200
+  ✓  T14 — result = ERROR_INACTIVE_STUDENT
+
+❏ T15. Хязгаар: courseID дутуу → 400 ERROR_BAD_REQUEST
+↳ POST /registrations
+  POST http://localhost:3000/registrations [400 Bad Request, 202B, 4ms]
+  ✓  T15 — статус 400
+  ✓  T15 — result = ERROR_BAD_REQUEST
+
+❏ T16. Хязгаар: studentID дутуу → 400 ERROR_BAD_REQUEST
+↳ POST /registrations
+  POST http://localhost:3000/registrations [400 Bad Request, 202B, 5ms]
+  ✓  T16 — статус 400
+  ✓  T16 — result = ERROR_BAD_REQUEST
+
+❏ T17. Хязгаар: хоосон объект {} → 400 ERROR_BAD_REQUEST
+↳ POST /registrations
+  POST http://localhost:3000/registrations [400 Bad Request, 202B, 5ms]
+  ✓  T17 — статус 400
+  ✓  T17 — result = ERROR_BAD_REQUEST
+
+❏ T18. Хязгаар: буруу JSON → 400 ERROR_BAD_JSON
+↳ POST /registrations
+  POST http://localhost:3000/registrations [400 Bad Request, 199B, 4ms]
+  ✓  T18 — статус 400
+  ✓  T18 — result = ERROR_BAD_JSON
+
+❏ T19. GET /courses/:id — байгаа хичээлийг харах → 200
+↳ Setup: хичээл t19-crs
+  PUT http://localhost:3000/courses/t19-crs [200 OK, 178B, 5ms]
+  ✓  Setup: хичээл t19-crs → 200 OK
+
+↳ GET /courses/t19-crs
+  GET http://localhost:3000/courses/t19-crs [200 OK, 219B, 5ms]
+  ✓  T19 — статус 200
+  ✓  T19 — courseID ба prerequisites зөв
+
+❏ T20. GET /courses/:id — байхгүй хичээл → 404 ERROR_NO_COURSE
+↳ GET /courses/t20-missing
+  GET http://localhost:3000/courses/t20-missing [404 Not Found, 198B, 4ms]
+  ✓  T20 — статус 404
+  ✓  T20 — result = ERROR_NO_COURSE
+
+❏ T21. Амжилттай бүртгэл GET /registrations жагсаалтад орно
+↳ Setup: оюутан t21-stu
+  PUT http://localhost:3000/students/t21-stu [200 OK, 178B, 5ms]
+  ✓  Setup: оюутан t21-stu → 200 OK
+
+↳ Setup: хичээл t21-crs
+  PUT http://localhost:3000/courses/t21-crs [200 OK, 178B, 4ms]
+  ✓  Setup: хичээл t21-crs → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 203B, 5ms]
+  ✓  T21 — статус 201
+  ✓  T21 — registrationID-г хадгалав
+
+↳ GET /registrations
+  GET http://localhost:3000/registrations [200 OK, 805B, 5ms]
+  ✓  T21 — статус 200 ба массив
+  ✓  T21 — шинэ бүртгэл (studentID, courseID, registrationID) жагсаалтад байна
+
+┌─────────────────────────┬─────────────────┬─────────────────┐
+│                         │        executed │          failed │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│              iterations │               1 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│                requests │              47 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│            test-scripts │              47 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│      prerequest-scripts │               0 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│              assertions │              75 │               1 │
+├─────────────────────────┴─────────────────┴─────────────────┤
+│ total run duration: 1086ms                                  │
+├─────────────────────────────────────────────────────────────┤
+│ total data received: 1.76kB (approx)                        │
+├─────────────────────────────────────────────────────────────┤
+│ average response time: 3ms [min: 1ms, max: 26ms, s.d.: 3ms] │
+└─────────────────────────────────────────────────────────────┘
+
+[31m  # [39m[31m failure        [39m[31m detail                                                                                   [39m
+[90m    [39m[90m                [39m[90m                                                                                          [39m
+ 1.  AssertionError  T01 — статус 200                                                                         
+                     expected response to have status code 200 but got 201                                    
+                     at assertion:0 in test-script                                                            
+                     inside "T01. Happy path: идэвхтэй оюутан, урьдач хангана → 201 OK / POST /registrations" 

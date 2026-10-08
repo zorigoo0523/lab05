@@ -1,0 +1,111 @@
+newman
+
+Lab05 — server.js-ийн согог илрүүлэгч тест
+
+❏ B1. Нэг оюутан нэг хичээлд ДАВХАР бүртгэгдэж болохгүй
+↳ Setup: оюутан b1-stu
+  PUT http://localhost:3000/students/b1-stu [200 OK, 178B, 33ms]
+  ✓  Setup: оюутан b1-stu → 200 OK
+
+↳ Setup: хичээл b1-crs
+  PUT http://localhost:3000/courses/b1-crs [200 OK, 178B, 4ms]
+  ✓  Setup: хичээл b1-crs → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 202B, 2ms]
+  ✓  B1 — эхний бүртгэл 201
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [201 Created, 202B, 2ms]
+  1. B1 — ижил бүртгэлийг дахин 201-ээр хүлээн авч болохгүй
+
+❏ B2. studentID = "constructor" (бүртгээгүй) → ERROR_NO_STUDENT
+↳ Setup: хичээл b2-crs
+  PUT http://localhost:3000/courses/b2-crs [200 OK, 178B, 3ms]
+  ✓  Setup: хичээл b2-crs → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 198B, 2ms]
+  2. B2 — result = ERROR_NO_STUDENT
+
+❏ B3. studentID = "__proto__" (бүртгээгүй) → ERROR_NO_STUDENT
+↳ Setup: хичээл b3-crs
+  PUT http://localhost:3000/courses/b3-crs [200 OK, 178B, 4ms]
+  ✓  Setup: хичээл b3-crs → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [200 OK, 198B, 4ms]
+  3. B3 — result = ERROR_NO_STUDENT
+
+❏ B4. GET /courses/constructor (үүсгээгүй) → 404
+↳ GET /courses/constructor
+  GET http://localhost:3000/courses/constructor [200 OK, 189B, 7ms]
+  4. B4 — статус 404
+
+❏ B5. courseID = "toString" (үүсгээгүй) → ERROR_NO_COURSE (одоо СЕРВЕР УНАНА — сүүлд нь байрлуулсан)
+↳ Setup: оюутан b5-stu
+  PUT http://localhost:3000/students/b5-stu [200 OK, 178B, 5ms]
+  ✓  Setup: оюутан b5-stu → 200 OK
+
+↳ POST /registrations
+  POST http://localhost:3000/registrations [errored]
+     socket hang up
+  6. B5 — статус 200
+  7. B5 — result = ERROR_NO_COURSE
+
+┌─────────────────────────┬─────────────────┬─────────────────┐
+│                         │        executed │          failed │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│              iterations │               1 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│                requests │              11 │               1 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│            test-scripts │              11 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│      prerequest-scripts │               0 │               0 │
+├─────────────────────────┼─────────────────┼─────────────────┤
+│              assertions │              12 │               6 │
+├─────────────────────────┴─────────────────┴─────────────────┤
+│ total run duration: 301ms                                   │
+├─────────────────────────────────────────────────────────────┤
+│ total data received: 239B (approx)                          │
+├─────────────────────────────────────────────────────────────┤
+│ average response time: 6ms [min: 2ms, max: 33ms, s.d.: 8ms] │
+└─────────────────────────────────────────────────────────────┘
+
+[31m  # [39m[31m failure        [39m[31m detail                                                                                                                            [39m
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 1.  AssertionError  B1 — ижил бүртгэлийг дахин 201-ээр хүлээн авч болохгүй                                                                            
+                     expected 201 to not deeply equal 201                                                                                              
+                     at assertion:0 in test-script                                                                                                     
+                     inside "B1. Нэг оюутан нэг хичээлд ДАВХАР бүртгэгдэж болохгүй / POST /registrations"                                              
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 2.  AssertionError  B2 — result = ERROR_NO_STUDENT                                                                                                    
+                     expected 'ERROR_INACTIVE_STUDENT' to deeply equal 'ERROR_NO_STUDENT'                                                              
+                     at assertion:0 in test-script                                                                                                     
+                     inside "B2. studentID = "constructor" (бүртгээгүй) → ERROR_NO_STUDENT / POST /registrations"                                      
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 3.  AssertionError  B3 — result = ERROR_NO_STUDENT                                                                                                    
+                     expected 'ERROR_INACTIVE_STUDENT' to deeply equal 'ERROR_NO_STUDENT'                                                              
+                     at assertion:0 in test-script                                                                                                     
+                     inside "B3. studentID = "__proto__" (бүртгээгүй) → ERROR_NO_STUDENT / POST /registrations"                                        
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 4.  AssertionError  B4 — статус 404                                                                                                                   
+                     expected response to have status code 404 but got 200                                                                             
+                     at assertion:0 in test-script                                                                                                     
+                     inside "B4. GET /courses/constructor (үүсгээгүй) → 404 / GET /courses/constructor"                                                
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 5.  Error                                                                                                                                             
+                     socket hang up                                                                                                                    
+                     at request                                                                                                                        
+                     inside ""                                                                                                                         
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 6.  AssertionError  B5 — статус 200                                                                                                                   
+                     expected PostmanResponse{ …(5) } to have property 'code'                                                                          
+                     at assertion:0 in test-script                                                                                                     
+                     inside "B5. courseID = "toString" (үүсгээгүй) → ERROR_NO_COURSE (одоо СЕРВЕР УНАНА — сүүлд нь байрлуулсан) / POST /registrations" 
+[90m    [39m[90m                [39m[90m                                                                                                                                   [39m
+ 7.  JSONError       B5 — result = ERROR_NO_COURSE                                                                                                     
+                     "undefined" is not valid JSON                                                                                                     
+                     at assertion:1 in test-script                                                                                                     
+                     inside "B5. courseID = "toString" (үүсгээгүй) → ERROR_NO_COURSE (одоо СЕРВЕР УНАНА — сүүлд нь байрлуулсан) / POST /registrations" 

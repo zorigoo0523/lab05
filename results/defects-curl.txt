@@ -1,0 +1,45 @@
+# server.js согогуудын curl нотолгоо (бодит гаралт)
+
+## D1. null биетэй POST серверийг унагаана
+$ curl -X POST localhost:3000/registrations -d 'null'
+  -> HTTP 000
+
+сервер амьд эсэх:
+$ curl -X GET localhost:3000/registrations 
+  -> HTTP 000
+
+## D2. courseID=toString (бүртгээгүй) серверийг унагаана
+$ curl -X PUT localhost:3000/students/S1 -d '{"status":"active"}'
+{"result":"OK"}  -> HTTP 200
+
+$ curl -X POST localhost:3000/registrations -d '{"studentID":"S1","courseID":"toString"}'
+  -> HTTP 000
+
+сервер амьд эсэх:
+$ curl -X GET localhost:3000/registrations 
+  -> HTTP 000
+
+## D3. studentID=constructor / __proto__ → NO_STUDENT биш INACTIVE
+$ curl -X PUT localhost:3000/courses/C1 -d '{}'
+{"result":"OK"}  -> HTTP 200
+
+$ curl -X POST localhost:3000/registrations -d '{"studentID":"constructor","courseID":"C1"}'
+{"result":"ERROR_INACTIVE_STUDENT"}  -> HTTP 200
+
+$ curl -X POST localhost:3000/registrations -d '{"studentID":"__proto__","courseID":"C1"}'
+{"result":"ERROR_INACTIVE_STUDENT"}  -> HTTP 200
+
+## D4. GET /courses/constructor → 404 биш 200
+$ curl -X GET localhost:3000/courses/constructor 
+{"courseID":"constructor"}  -> HTTP 200
+
+## D5. Давхар бүртгэл
+$ curl -X PUT localhost:3000/students/S1 -d '{"status":"active"}'
+{"result":"OK"}  -> HTTP 200
+
+$ curl -X POST localhost:3000/registrations -d '{"studentID":"S1","courseID":"C1"}'
+{"result":"OK","registrationID":1}  -> HTTP 201
+
+$ curl -X POST localhost:3000/registrations -d '{"studentID":"S1","courseID":"C1"}'
+{"result":"OK","registrationID":2}  -> HTTP 201
+
